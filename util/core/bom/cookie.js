@@ -27,7 +27,7 @@ define(function(require, exports, module) {
          */
         set:function(key, value, time, params) {
             if(!time) {
-                time = 1 * 24 * 3600 * 1000;
+                time = 365 * 24 * 3600 * 1000;
             }
             var expires = new Date();
             expires.setTime(expires.getTime() + time);
