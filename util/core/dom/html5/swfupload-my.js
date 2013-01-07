@@ -201,6 +201,9 @@ define(function (require, exports, module) {
             this.obj.setStats(stats);
             callback && callback.call(this);
         },
+        setUploadUrl: function(url) {
+            this.obj.setUploadURL(url);
+        },
         reset:function (callback) {
             var swf = this.obj;
             //if (this.loaded) {

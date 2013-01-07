@@ -155,6 +155,10 @@ define(function(require, exports, module) {
                 $('#' + this.button).removeClass('upload-select-btn-dis');
                 $('#' + this.button + '>input')[0].disabled = false;
                 return this;
+            },
+            setUploadUrl: function(url) {
+                this.obj.setUploadUrl(url);
+                return this;
             }
         };
     } else {
@@ -245,6 +249,10 @@ define(function(require, exports, module) {
             },
             enable: function() {
                 this.obj.enable();
+                return this;
+            },
+            setUploadUrl: function(url) {
+                this.obj.setUploadUrl(url);
                 return this;
             }
         };

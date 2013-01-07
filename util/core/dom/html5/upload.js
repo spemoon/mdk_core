@@ -68,7 +68,7 @@ define(function(require, exports, module) {
         this.status = 0; // 上传整体状态标识 0：未开始上传或上传完成，正数：正在上传的文件数量
         this.type = params.type || 'form'; // 默认form方式上传，还有blob, buffer，非这三个值则认为是DOM上传
         this.max = parseInt(params.max) || config.max; // 同时上传数量
-        this.limit = parseInt(params.limit) || config.limit; // 最多上传的数量
+        this.limit = parseInt(params.limit); // 最多上传的数量,0为不限制
         this._maxSize = params.maxSize ? params.maxSize : config.maxSize; // copy
         this.maxSize = helper.unit(this._maxSize); // 单文件最大大小
         this.overLimit = params.overLimit; // (limit) 超过限制数量的回调
@@ -192,7 +192,7 @@ define(function(require, exports, module) {
             var scope = $(this);
             var _this = this;
             var arr = files.length ? files : [files];
-            if(files.length + this.successList.length + this.fileList.length + this.status > this.limit) {
+            if(this.limit && (files.length + this.successList.length + this.fileList.length + this.status > this.limit)) {
                 if(lang.isFunction(this.overLimit)) {
                     this.overLimit(this.limit);
                 }
@@ -205,7 +205,6 @@ define(function(require, exports, module) {
                             ext = ext[ext.length - 1].toLowerCase();
                             ext = '*.' + ext;
                             file.index = _this.index++;
-                            console.log(file.index);
                             if($.inArray(ext, extArr) != -1) {
                                 temp.push(file);
                             } else {
