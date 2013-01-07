@@ -59,17 +59,17 @@ define(function(require, exports, module) {
                     var fetchAction = fetch[actionKey];
                     if(fetchAction) {
                         if(lang.isFunction(fetchAction)) {
-                            flag = fetchAction.call(target, e, xnode);
+                            flag = fetchAction.call(target, e, xnode, actionKey);
                         } else {
                             if(lang.isFunction(fetchAction.is) || lang.isFunction(fetchAction.action)) {
                                 var fn = fetchAction.is || fetchAction.action;
-                                flag = fn.call(fetchAction.scope || target, e, xnode);
+                                flag = fn.call(fetchAction.scope || target, e, xnode, actionKey);
                             }
                         }
                     }
                     for(var key in fetch) {
                         if(key != actionKey && fetch[key] && fetch[key].not && lang.isFunction(fetch[key].not)) {
-                            fetch[key].not.call(fetch[key].scope || target, e, xnode);
+                            fetch[key].not.call(fetch[key].scope || target, e, xnode, actionKey);
                         }
                     }
                     if(flag === -1) { // 禁用冒泡
