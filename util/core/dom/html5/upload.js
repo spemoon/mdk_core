@@ -40,6 +40,15 @@ define(function(require, exports, module) {
             if(i != -1) {
                 arr.splice(i, 1);
             }
+        },
+        resCheck: function(json) {
+            var flag;
+            if(lang.isFunction(this.resCheck)) {
+                flag = this.resCheck.call(this, json);
+            } else {
+                flag = json.code == 200;
+            }
+            return flag;
         }
     };
 
@@ -77,6 +86,7 @@ define(function(require, exports, module) {
         this.overSize = params.overSize; // (file, size)超过限制大小，会触发failureAdd事件
         // 文件类型，使用扩展名，统配所有所占名用*，统配多个扩展名用半角封号;隔开
         this.fileType = (params.fileType && params.fileType.split(';')) || ['*'];
+        this.resCheck = params.resCheck;
         (function(arr) {
             for(var i = 0, len = arr.length; i < len; i++) {
                 arr[i] = $.trim(arr[i].toLowerCase()); // 把扩展名全部转小写
@@ -124,7 +134,7 @@ define(function(require, exports, module) {
                         xhr.onload = function(e) {
                             try {
                                 var json = JSON.parse(xhr.responseText);
-                                if(json.code == 200) {
+                                if(helper.resCheck.call(_this, json)) {
                                     scope.trigger('success', [file, json]);
                                     _this.successList.push(file);
                                 } else {
