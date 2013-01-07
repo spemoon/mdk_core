@@ -47,9 +47,12 @@ define(function(require, exports, module) {
          * @param {String} string 需要计算长度的字符串
          */
         blength: function(string, flag) {
-            var len = string.replace(/[^\x00-\xff]/g, '**').length;
-            if(flag === true) {
-                len = Math.ceil(len / 2);
+            var len = 0;
+            if(string) {
+                len = string.replace(/[^\x00-\xff]/g, '**').length;
+                if(flag === true) {
+                    len = Math.ceil(len / 2);
+                }
             }
             return len;
         },
