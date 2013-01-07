@@ -118,6 +118,8 @@ define(function(require, exports, module) {
          *     max: 图片最大尺寸（宽或高），可选
          *     maxWidth: 图片最大宽度，优先级大于max，缺省是max，可选
          *     maxHeight: 图片最大高度，优先级大于max，缺省是max，可选
+         *     width: 传入的图片宽度
+         *     height: 传入的图片高度
          *     overflow: 是否允许图片超出max范围，true允许，即按短边缩放，其他标识按长边缩放（默认值），可选
          *     callback: 回调
          * @return {Object}
@@ -126,8 +128,8 @@ define(function(require, exports, module) {
          */
         zoom: function(params) {
             var image = params.node[0] || params.node;
-            var width = image.width;
-            var height = image.height;
+            var width = params.width || image.width;
+            var height = params.height || image.height;
             var maxWidth = params.maxWidth || params.max;
             var maxHeight = params.maxHeight || params.max;
             var overflow = params.overflow === true;
