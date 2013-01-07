@@ -31,7 +31,6 @@ define(function(require, exports, module) {
          *
          * @param node 监听的节点
          * @param action 触发的函数
-         * @param mode IE678使用可能会触发太多，mode为true时使用keydown方式
          */
         reg: function(node, action) {
             node = $(node);
@@ -50,7 +49,7 @@ define(function(require, exports, module) {
                         rule: function() {
                             return flag;
                         },
-                        step: 32,
+                        step: 64,
                         scope: this
                     });
                 });
@@ -169,7 +168,7 @@ define(function(require, exports, module) {
                     }
                 }
             },
-            offset: function(node) {
+            offset: function(node, pos) {
                 node = $(node);
                 var offset = {};
                 if(document.selection && document.selection.createRange) {
@@ -192,11 +191,8 @@ define(function(require, exports, module) {
                         cursorDiv.style.visibility = 'hidden';
                         cursorDiv.style.position = 'absolute';
                     }
-                    var val = node.val();
+                    var val = node.val().slice(0, lang.isUndefined(pos) ? r.position.get(node).end : pos);
                     var nodeOffset = node.offset();
-                    if(val) {
-                        val = val.slice(0, r.position.get(node).end);
-                    }
                     val = string.code(val);
                     val = val.replace(/\n/g, '<br/>').replace(/ /g, '&nbsp;');
                     val = val + '<span>&nbsp;</span>';
