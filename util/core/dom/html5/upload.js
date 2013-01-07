@@ -26,6 +26,20 @@ define(function(require, exports, module) {
                 }
             }
             return d * Math.pow(1000, n);
+        },
+        search: function(index, arr) {
+            for(var i = 0, f; f = arr[i]; i++) {
+                if(index == f.index) {
+                    return i;
+                }
+            }
+            return -1;
+        },
+        del: function(index, arr) {
+            var i = helper.search(index, arr);
+            if(i != -1) {
+                arr.splice(i, 1);
+            }
         }
     };
 
@@ -55,7 +69,8 @@ define(function(require, exports, module) {
         this.type = params.type || 'form'; // 默认form方式上传，还有blob, buffer，非这三个值则认为是DOM上传
         this.max = parseInt(params.max) || config.max; // 同时上传数量
         this.limit = parseInt(params.limit) || config.limit; // 最多上传的数量
-        this.maxSize = helper.unit(params.maxSize ? params.maxSize : config.maxSize); // 单文件最大大小
+        this._maxSize = params.maxSize ? params.maxSize : config.maxSize; // copy
+        this.maxSize = helper.unit(this._maxSize); // 单文件最大大小
         this.overLimit = params.overLimit; // (limit) 超过限制数量的回调
         this.notAllowType = params.notAllowType; // (file) 出现不允许类型的回调，会触发failure
         this.zeroSize = params.zeroSize; // (file) 空文件回调，会触发failureAdd事件
@@ -86,8 +101,8 @@ define(function(require, exports, module) {
                 var _this = this;
                 var scope = $(this);
                 var file = _this.fileList.shift(); // 取队列头的文件上传
-                this.status++;
                 if(file) {
+                    this.status++;
                     params = params || {};
                     if(isSupportHTML5Upload) {
                         var xhr = new XMLHttpRequest();
@@ -100,9 +115,8 @@ define(function(require, exports, module) {
                         var finish = function(file) {
                             _this.status--;
                             delete _this.xhrList[file.index];
-                            if(_this.fileList.length == 0) {
-                                _this.xhrList = {};
-                                scope.trigger('complete', [file]);
+                            if(_this.fileList.length == 0 && _this.status <= 0) {
+                                scope.trigger('complete', [file, xhr]);
                             } else {
                                 _this.upload(params);
                             }
@@ -121,11 +135,12 @@ define(function(require, exports, module) {
                                 scope.trigger('error', [file, xhr.responseText]);
                                 _this.failureList.push(file);
                             } finally {
+                                scope.trigger('finish', [file, xhr]);
                                 finish(file);
-                                scope.trigger('finish', [file]);
                             }
                         };
                         xhr.onerror = function(e) {
+                            scope.trigger('finish', [file, xhr]);
                             finish(file);
                         };
                         xhr.open('POST', params.url || this.url, true);
@@ -162,9 +177,8 @@ define(function(require, exports, module) {
                                 xhr.send(file);
                             }
                         }
+                        this.upload(params);
                     }
-                } else {
-                    this.status = 0;
                 }
             }
             return this;
@@ -178,7 +192,7 @@ define(function(require, exports, module) {
             var scope = $(this);
             var _this = this;
             var arr = files.length ? files : [files];
-            if(files.length + this.successList.length > this.limit) {
+            if(files.length + this.successList.length + this.fileList.length + this.status > this.limit) {
                 if(lang.isFunction(this.overLimit)) {
                     this.overLimit(this.limit);
                 }
@@ -191,6 +205,7 @@ define(function(require, exports, module) {
                             ext = ext[ext.length - 1].toLowerCase();
                             ext = '*.' + ext;
                             file.index = _this.index++;
+                            console.log(file.index);
                             if($.inArray(ext, extArr) != -1) {
                                 temp.push(file);
                             } else {
@@ -221,7 +236,7 @@ define(function(require, exports, module) {
                             if(lang.isFunction(_this.overSize)) {
                                 file.error = true;
                                 scope.trigger('failureAdd', [file, files]);
-                                this.overSize(file, this.maxSize);
+                                this.overSize(file, this._maxSize);
                             }
                         } else {
                             this.fileList.push(file);
@@ -243,13 +258,26 @@ define(function(require, exports, module) {
                 if(xhr && xhr.abort) {
                     xhr.abort();
                 }
+                delete this.xhrList[key];
             }
             this.fileList.length = 0;
             this.successList.length = 0; // 上传成功文件队列
             this.failureList.length = 0; // 上传失败文件队列
-            this.xhrList = {};
             this.status = 0; // 上传整体状态标识 0：未开始上传或上传完成，>0：正在上传
             callback && callback.call(this);
+            return this;
+        },
+        abort: function(index) {
+            var xhr = this.xhrList[index];
+            if(xhr) { // 正在上传
+                this.status--;
+                xhr.abort();
+                delete this.xhrList[index];
+            }
+            helper.del(index, this.fileList);
+            helper.del(index, this.successList);
+            helper.del(index, this.failureList);
+            this.upload();
             return this;
         },
         setUploadUrl: function(url) {
