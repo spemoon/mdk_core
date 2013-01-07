@@ -76,6 +76,7 @@ define(function(require, exports, module) {
                     }
                 }, false);
             }
+
         },
         listen: function(node, actions, prevent) {
             var status = {};
@@ -89,7 +90,6 @@ define(function(require, exports, module) {
                         if(actions.top) {
                             if(result == 'top' && dir == 'up') {
                                 actions.top(e, top, dir, status);
-                                r.to(node, top);
                             }
                         }
                         if(actions.bottom) {
