@@ -8,17 +8,30 @@ define(function (require, exports, module) {
     };
     var supportHash = ('onhashchange' in window) && ((typeof document.documentMode === 'undefined') || document.documentMode == 8);
     var lastHash = helper.getHash();
+    var cache = {};
     return {
         listen:function (obj) {
+            (function () {
+                for (var key in obj) {
+                    if (!cache[key]) {
+                        cache[key] = obj[key];
+                    }
+                }
+            })();
+
             if (supportHash) {
                 window.onhashchange = function (e) {
                     var prev = e.oldURL;
                     var url = e.newURL;
                     var hash = helper.getHash();
                     if (prev !== url) {
-                        for (var key in obj) {
+                        for (var key in cache) {
                             if (key === hash) {
-                                obj[key](hash, prev, url);
+                                cache[key](hash, false);
+                                if (cache[key].callback) { // 用于set的时候的回调
+                                    cache[key].callback();
+                                    delete cache[key].callback;
+                                }
                             }
                         }
                     }
@@ -45,9 +58,13 @@ define(function (require, exports, module) {
                                         doc.write('<!doctype html><html><body>' + hash + '</body></html>');
                                         doc.close();
                                     }
-                                    for (var key in obj) {
+                                    for (var key in cache) {
                                         if (key === hash) {
-                                            obj[key](hash);
+                                            cache[key](hash, false);
+                                            if (cache[key].callback) { // 用于set的时候的回调
+                                                cache[key].callback();
+                                                delete cache[key].callback;
+                                            }
                                         }
                                     }
                                 } else if (historyHash !== lastHash) {// 回退/前进
@@ -60,12 +77,22 @@ define(function (require, exports, module) {
             }
             (function () { // 初始化触发
                 var hash = helper.getHash();
-                for (var key in obj) {
+                for (var key in cache) {
                     if (key === hash) {
-                        obj[key](hash, '', location.href);
+                        cache[key](hash, true);
                     }
                 }
             })();
+        },
+        set:function (hash, callback) {
+            location.hash = '#' + hash;
+            if (callback) {
+                for (var key in cache) {
+                    if (key === hash) {
+                        cache[key].callback = callback;
+                    }
+                }
+            }
         }
     }
 });

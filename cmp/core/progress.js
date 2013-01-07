@@ -36,7 +36,7 @@ define(function (require, exports, module) {
                 this.percent = Math.min(percent, 100);
                 progressNode.width(this.width * this.percent / 100);
                 if(this.showPercent && this.percent != 0) {
-                    this.setText(this.text + ' ' + this.percent + '%');
+                    this.element.find('.m-progress-text').text(this.text + ' ' + (this.percent).toFixed(2) + '%');
                 }
                 if(this.percent >= 100) {
                     lang.callback(this.finish, {
@@ -48,10 +48,11 @@ define(function (require, exports, module) {
             reset: function() {
                 this.percent = 0;
                 this.setText(this.text);
-                this.position(0);
+                this.setValue(0);
                 return this;
             },
             setText: function(text) {
+                this.text = text;
                 this.element.find('.m-progress-text').text(text);
                 return this;
             }
