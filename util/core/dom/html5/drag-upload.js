@@ -3,7 +3,16 @@ define(function(require, exports, module) {
         addEventListener: function(node, type, action) {
             node.addEventListener(type, function(e) {
                 var files = e.target.files || e.dataTransfer.files;
-                action && action(e, files);
+                if(type === 'drop') {
+                    try {
+                        if(files && files.length) {
+                            action && action(e, files);
+                        }
+                    } catch(e) {
+                    }
+                } else {
+                    action && action(e, files);
+                }
                 e.stopPropagation();
                 e.preventDefault();
             }, false);
